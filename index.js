@@ -39,10 +39,10 @@ let persons = [
 app.get('/', (request, response) => {
   response.send(`<h1>Hello! Welcome to the persons API!</h1>
   <p>to get info, please go to
-  <a href="http://localhost:3001/api/info">info</a>
+  <a href="/api/info">info</a>
   </p>
   <p>to see all the persons, please go to 
-  <a href="http://localhost:3001/api/persons">persons</a>
+  <a href="/api/persons">persons</a>
   </p>`)
 })
 
