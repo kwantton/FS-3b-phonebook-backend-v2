@@ -1,1 +1,2 @@
-GET http://localhost:3001/info
+GET https://fs-3b-phonebook-backend-v2.onrender.com/api/info
+# note! The correct address depends on the Render address (or if you use fly.io, something else, dunno!)

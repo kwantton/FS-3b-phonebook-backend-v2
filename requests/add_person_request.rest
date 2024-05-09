@@ -1,7 +1,9 @@
-POST http://localhost:3001/api/persons
+POST https://fs-3b-phonebook-backend-v2.onrender.com/api/persons
 Content-Type: application/json
 
 {
-    "name" : "Esko Juhani Heikkinen",
+    "name" : "Esko Super Heikkinen 2",
     "number" : "+358 112 69 420"
 }
+
+# note! The correct address depends on the Render address (or if you use fly.io, something else, dunno!)

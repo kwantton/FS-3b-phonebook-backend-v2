@@ -1,6 +1,7 @@
 const express = require('express')
 const app = express()
 app.use(express.json())       // THIS IS NEEDED FOR POSTs!!!
+app.use(express.static('dist')) // so that static files can be served from the backend. "whenever Express gets an HTTP GET request it will first check if the dist directory contains a file corresponding to the request's address. If a correct file is found, Express will return it."
 
 const morgan = require("morgan") // https://github.com/expressjs/morgan see "examples" section
 const logger = morgan(":method :url :status :res[content-length] - :response-time ms") // https://github.com/expressjs/morgan see "examples" section. "tiny" logs only a "tiny" amount of stuff, "combined" logs a lot more! c:
