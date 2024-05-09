@@ -1,0 +1,30 @@
+{
+  "name": "phonebook_backend",
+  "version": "1.0.0",
+  "description": "phonebook backend, task 3.1 onwards, part 3 in FullStack course",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/kwantton/phonebook_backend.git"
+  },
+  "author": "Antton Kasslin",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/kwantton/phonebook_backend/issues"
+  },
+  "homepage": "https://github.com/kwantton/phonebook_backend#readme",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "morgan": "^1.10.0"
+  },
+  "devDependencies": {
+    "@flydotio/dockerfile": "^0.5.7",
+    "nodemon": "^3.1.0"
+  }
+}
