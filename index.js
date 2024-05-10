@@ -60,11 +60,12 @@ app.get('/api/info', (request, response) => {
     response.send(palaute + "<br/>" + date)})
 })
 
-app.delete('/api/persons/:id', (request,response) => {
-  const id = Number(request.params.id)
-  persons = persons.filter(person => person.id !== id) // note that persons is the object here; it has Numbers, and id was converted to a number -> comparison is ok
-  // this will be implemented at some point on MongoDB level. NOT REALLY IMPLEMENTED rn
-  response.status(204).end() // "response.end() method expects a string or a buffer to send as the response body." Also, // end doesn't send any actual data: "Since no data is attached to the response, we use the status method for setting the status and the end method for responding to the request without sending any data." 204 = "no content"
+app.delete('/api/persons/:id', (request,response,next) => {
+  Person.findByIdAndDelete(request.params.id)
+  .then(result => {
+    response.status(204).end()
+  })
+  .catch(error => next())
 })
 
 app.post('/api/persons/', (request, response) => { // NB! app.use(express.json()) IS NEEDED FOR POSTs!!! This is written on top c:
