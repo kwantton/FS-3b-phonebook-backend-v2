@@ -19,6 +19,7 @@ const cors = require('cors')  // cross-origin resource sharing; needed, since th
 app.use(cors())               // note the () at the end... sigh
 
 let persons = []              // one could initialize this with some default content, but it will be overwritten from mongodb anyways
+let number_of_persons
 
 app.get('/', (request, response) => {
   response.send(`
@@ -33,28 +34,30 @@ app.get('/', (request, response) => {
 
 app.get('/api/persons', (request, response) => {
   Person.find({}).then(persons => {
+    number_of_persons = persons.length
     response.json(persons)
   })
 })
 
 app.get('/api/persons/:id', (request, response) => {
-  const id = Number(request.params.id)
-  console.log(id)
-  Note.findById(request.params.id).then(person => {
-    console.log({person}) // to-do: how to save the 
+  Person.findById(request.params.id)
+  .then(person => {
+    console.log({person})
     if(person) { // if person is not null, undefined, "", false, or something else
       response.json(person)
     } else {
       response.status(404).end() // end doesn't send any actual data: "Since no data is attached to the response, we use the status method for setting the status and the end method for responding to the request without sending any data."
     }
   })
+  .catch(error => console.log("OBS! ERROR: Couldn't find person with the used id", request.params.id, "error message:", error))
 }) 
 
 app.get('/api/info', (request, response) => {
-  let number_of_persons = persons.length
-  const palaute = `Phonebook has info for ${number_of_persons} persons`
-  const date = new Date()
-  response.send(palaute + "<br/>" + date)
+  Person.find({}).then(persons => { // you have to put ALL of this inside this .then block, otherwise it wouldn't update the number_of_persons on time before rendering the number on screen -> it would say "undefined" number of persons c:
+    number_of_persons = persons.length
+    const palaute = `Phonebook has info for ${number_of_persons} persons` // problem at the moment is that it only updates AFTER you've visited the main page which loads all the persons
+    const date = new Date()
+    response.send(palaute + "<br/>" + date)})
 })
 
 app.delete('/api/persons/:id', (request,response) => {
