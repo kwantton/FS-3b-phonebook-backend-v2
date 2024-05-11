@@ -32,14 +32,16 @@ app.get('/', (request, response) => {
   </p>`)
 })
 
-app.get('/api/persons', (request, response) => {
-  Person.find({}).then(persons => {
+app.get('/api/persons', (request, response, next) => {
+  Person.find({})
+  .then(persons => { // find ALL persons
     number_of_persons = persons.length
     response.json(persons)
   })
+  .catch(error => next(error))
 })
 
-app.get('/api/persons/:id', (request, response) => {
+app.get('/api/persons/:id', (request, response, next) => { // DO NOT FORGET NEXT as the 3rd parameter if you're using an error handler! c:
   Person.findById(request.params.id)
   .then(person => {
     console.log({person})
@@ -49,13 +51,23 @@ app.get('/api/persons/:id', (request, response) => {
       response.status(404).end() // end doesn't send any actual data: "Since no data is attached to the response, we use the status method for setting the status and the end method for responding to the request without sending any data."
     }
   })
-  .catch(error => console.log("OBS! ERROR: Couldn't find person with the used id", request.params.id, "error message:", error))
+  .catch(error => next(error))
 }) 
 
 app.get('/api/info', (request, response) => {
   Person.find({}).then(persons => { // you have to put ALL of this inside this .then block, otherwise it wouldn't update the number_of_persons on time before rendering the number on screen -> it would say "undefined" number of persons c:
     number_of_persons = persons.length
-    const palaute = `Phonebook has info for ${number_of_persons} persons` // problem at the moment is that it only updates AFTER you've visited the main page which loads all the persons
+    const palaute = `
+    Phonebook has info for ${number_of_persons} persons.
+    <ul>
+    <li>for the home page with search, please click
+      <a href="/">home</a>
+    </li>
+    <li>to view the api side of all persons in the phonebook, please go to 
+      <a href="/api/persons">persons</a>
+    </li>
+    </ul>
+    ` // problem at the moment is that it only updates AFTER you've visited the main page which loads all the persons
     const date = new Date()
     response.send(palaute + "<br/>" + date)})
 })
@@ -65,25 +77,28 @@ app.delete('/api/persons/:id', (request,response,next) => {
   .then(result => {
     response.status(204).end()
   })
-  .catch(error => next())
+  .catch(error => next(error)) // this forwards the merror to the error handling middleware below (which ALWAYS has to be last)
 })
 
 app.post('/api/persons/', (request, response) => { // NB! app.use(express.json()) IS NEEDED FOR POSTs!!! This is written on top c:
   const body = request.body
 
   if(body.name === undefined) {
-    return response.status(404).json({
+    return response.status(400).json({
       error:"name missing! Please provide both a name AND a number!"
     })
   }
 
   if (body.number === undefined) {
-    return response.status(404).json({
+    return response.status(400).json({
       error:"number missing! Please provide both a name AND a number!"
     })
   }
 
-  const names = persons.map(person => person.name)
+  let names
+  Person.find({})
+  .then(persons => { // find ALL persons
+    names = persons.map(person => person.name)
   if (names.includes(body.name)) {
     return response.status(400).json({
       error:"name already exists in the phonebook! Try adding another name c:"
@@ -96,17 +111,43 @@ app.post('/api/persons/', (request, response) => { // NB! app.use(express.json()
   })
   
   morgan.token('post_body', () => JSON.stringify(body))
-  persons = persons.concat(person)
 
   person.save().then(savedContact => { // mongoDB
     response.json(savedContact)
   })
 })
+})
+
+app.put('/api/persons/:id', (request, response, next) => { // remember: the actual window.confirm comes from the FRONTend, not from here c:
+  const body = request.body
+
+  const person = {
+    name: body.name,
+    number: body.number,
+  }
+
+  Person.findByIdAndUpdate(request.params.id, person, { new: true })
+    .then(updatedContact => {
+      response.json(updatedContact)
+    })
+    .catch(error => next(error))
+})
 
 const unknownEndpoint = (request, response) => { // THIS IS LAST, BECAUSE THIS WILL ONLY BE EXECUTED IF NONE OF THE PATHS ABOVE HAVE BEEN EXECUTED! c:
-  response.status(404).send({ error: 'unknown endpoint' })
+  response.status(404).send({ error: 'unknown endpoint; please check the address! See [home]/api/info for info' })
 }
 app.use(unknownEndpoint) //   first definition above, THEN use c:
+
+const errorHandler = (error, request, response, next) => {
+  console.error(error.message)
+  if (error.name === 'CastError') {
+    return response.status(400).send({ error: 'the id you were looking for could not be found. Maybe a 🐉 has taken your id??' })
+  } 
+  next(error)
+}
+
+// this has to be the last loaded middleware, also all the routes should be registered before this! (https://fullstackopen.com/en/part3/saving_data_to_mongo_db#error-handling)
+app.use(errorHandler)
 
 const PORT = process.env.PORT  // needed by both fly.io AND Render, no matter which one you use.
 app.listen(PORT, () => {
