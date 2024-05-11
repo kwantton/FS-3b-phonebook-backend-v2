@@ -18,14 +18,21 @@ mongoose.connect(url)
 const personSchema = new mongoose.Schema({ // mongoose validation: make sure the name and number both are long enough
     name:{
         type: String,
-        minLength:3, 
-        required: true
+        minLength:3,        // built-in validator
+        required: true      // built-in validator
     },
-    
+
     number:{
         type:String,
         minLength:8,
-        required: true
+        required: true,
+        validate: {         // custom validator: (https://mongoosejs.com/docs/validation.html#custom-validators)
+            validator: function(validatee) {
+                const regex = /^[0-9]{2,3}-[0-9]{1,}$/ // Starts with 2-3 numbers, then hyphen, then 1 or more number. Could replace [0-9] with \d but that's for wussies. The second part is arbitrary, might not represent real life c:
+                return regex.test(validatee) // remember the JavaScript course; this was covered there c: 
+                return true // old example, works: always passes the test -> doesn't affect anything. Just for initial testing.
+            },  message: props => `${props.value} is not a valid phone number!` // directly from (https://mongoosejs.com/docs/validation.html#custom-validators)
+        }
     }
 })
 
